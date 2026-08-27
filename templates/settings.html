@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AbhiApp Vault{% endblock %}
+
+{% block extra_head %}
+<style>
+  .settings-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 600px) {
+    .settings-form-grid {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:1.25rem;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;">
+
+  <!-- Header -->
+  <div>
+    <h1 style="font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-0.02em;">Vault Settings</h1>
+    <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.1rem;">Manage your user credentials, storage quota, security, and vault preferences</p>
+  </div>
+
+  <!-- Storage Information Card -->
+  <div class="glass-card">
+    <h2 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.2rem;">Storage Breakdown</h2>
+    <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:1rem;">Overview of disk storage usage across engineering and document categories</p>
+
+    <div style="margin-bottom:1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;font-size:0.8rem;">
+        <span style="color:#fff;font-weight:600;"><span id="storageUsedText">-</span> of <span id="storageLimitText">20.0 GB</span> Used</span>
+        <span id="storagePercentText" style="color:#38bdf8;font-weight:700;">0%</span>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
+        <div id="storageBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#38bdf8);border-radius:999px;transition:width 0.5s ease;"></div>
+      </div>
+    </div>
+
+    <div class="file-table-container">
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>File Count</th>
+            <th style="text-align:right;">Storage Consumed</th>
+          </tr>
+        </thead>
+        <tbody id="storageCategoryBreakdownBody">
+          <tr>
+            <td colspan="3" style="text-align:center;padding:1rem;color:#94a3b8;">Calculating storage usage...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Profile Settings -->
+  <div class="glass-card">
+    <h2 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.2rem;">Account Profile</h2>
+    <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:1rem;">Update your username and email address</p>
+
+    <form onsubmit="handleProfileUpdate(event)" style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="settings-form-grid">
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Username</label>
+          <input type="text" id="settingsUsername" value="{{ user.username }}" class="select-styled" style="width:100%;" required>
+        </div>
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Email Address</label>
+          <input type="email" id="settingsEmail" value="{{ user.email }}" class="select-styled" style="width:100%;" required>
+        </div>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm">Save Profile Changes</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Password Security -->
+  <div class="glass-card">
+    <h2 style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.2rem;">Password & Security</h2>
+    <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:1rem;">Secure password hashing protects all stored files and technical assets</p>
+
+    <form onsubmit="handlePasswordChange(event)" style="display:flex;flex-direction:column;gap:0.85rem;">
+      <div>
+        <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Current Password</label>
+        <input type="password" id="currentPasswordInput" class="select-styled" style="width:100%;max-width:360px;" required placeholder="••••••••••••">
+      </div>
+      <div class="settings-form-grid">
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">New Password</label>
+          <input type="password" id="newPasswordInput" class="select-styled" style="width:100%;" minlength="6" required placeholder="Minimum 6 characters">
+        </div>
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Confirm New Password</label>
+          <input type="password" id="confirmNewPasswordInput" class="select-styled" style="width:100%;" minlength="6" required placeholder="Repeat new password">
+        </div>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="glass-card" style="border-color:rgba(244,63,94,0.3);">
+    <h2 style="font-size:1rem;font-weight:700;color:#fb7185;margin-bottom:0.2rem;">Danger Zone</h2>
+    <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:1rem;">Permanent destructive actions for your account</p>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.85rem;">
+      <div style="min-width:0;flex:1;">
+        <div style="font-weight:600;color:#fff;font-size:0.85rem;">Delete Account & Vault Data</div>
+        <div style="font-size:0.75rem;color:#94a3b8;">Permanently delete your account, database records, and all uploaded physical files from the server.</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="handleDeleteAccount()">Delete Account</button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStorageStats();
+  });
+
+  async function loadStorageStats() {
+    try {
+      const res = await fetch('/api/settings/storage');
+      const data = await res.json();
+      if (!data.success) return;
+
+      document.getElementById('storageUsedText').textContent = data.total_storage_formatted;
+      document.getElementById('storageLimitText').textContent = data.quota_limit_formatted;
+      document.getElementById('storagePercentText').textContent = `${data.percentage_used}%`;
+      document.getElementById('storageBarFill').style.width = `${Math.min(data.percentage_used, 100)}%`;
+
+      const tbody = document.getElementById('storageCategoryBreakdownBody');
+      let html = '';
+      data.categories.forEach(cat => {
+        html += `
+          <tr>
+            <td><span style="font-weight:600;color:#fff;">${cat.category}</span></td>
+            <td><span style="color:#94a3b8;">${cat.count} files</span></td>
+            <td style="text-align:right;font-weight:600;color:#38bdf8;">${cat.formatted_size}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    } catch (e) {
+      console.error('Error fetching storage stats:', e);
+    }
+  }
+
+  async function handleProfileUpdate(e) {
+    e.preventDefault();
+    const username = document.getElementById('settingsUsername').value.trim();
+    const email = document.getElementById('settingsEmail').value.trim();
+
+    try {
+      const res = await fetch('/api/settings/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Failed to update profile.', 'error');
+      }
+    } catch (e) {
+      showToast('Network error updating profile.', 'error');
+    }
+  }
+
+  async function handlePasswordChange(e) {
+    e.preventDefault();
+    const current_password = document.getElementById('currentPasswordInput').value;
+    const new_password = document.getElementById('newPasswordInput').value;
+    const confirm_password = document.getElementById('confirmNewPasswordInput').value;
+
+    if (new_password !== confirm_password) {
+      showToast('New passwords do not match.', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/settings/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password, new_password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+        document.getElementById('currentPasswordInput').value = '';
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmNewPasswordInput').value = '';
+      } else {
+        showToast(data.error || 'Failed to change password.', 'error');
+      }
+    } catch (e) {
+      showToast('Network error updating password.', 'error');
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!confirm('CAUTION: This will permanently delete your account, all your CAD files, and documents. Are you absolutely sure?')) return;
+
+    try {
+      const res = await fetch('/api/settings/account', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        window.location.href = data.redirect || '/login';
+      } else {
+        showToast(data.error || 'Failed to delete account.', 'error');
+      }
+    } catch (e) {
+      showToast('Network error.', 'error');
+    }
+  }
+</script>
+{% endblock %}

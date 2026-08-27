@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0d14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AbhiApp">
+  
+  <title>{% block title %}AbhiApp - Your Personal Digital Vault{% endblock %}</title>
+  
+  <!-- Favicon & PWA Manifest -->
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/previews.css') }}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="bg-mesh"></div>
+
+  {% if session.get('user_id') %}
+  <!-- App Shell -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
+    <aside class="sidebar" id="mainSidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">A</div>
+        <div class="brand-info">
+          <span class="brand-title">AbhiApp</span>
+          <span class="brand-subtitle">Personal Vault</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <span class="nav-section-title">Overview</span>
+        <a href="{{ url_for('dashboard.dashboard_page') }}" class="nav-item {% if request.endpoint == 'dashboard.dashboard_page' or request.endpoint == 'dashboard.root' %}active{% endif %}">
+          <span class="nav-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('files.vault_page') }}" class="nav-item {% if request.endpoint == 'files.vault_page' and not request.args.get('category') and not request.args.get('favorite') %}active{% endif %}">
+          <span class="nav-icon">📁</span>
+          <span>All Files</span>
+        </a>
+        <a href="{{ url_for('folders.folders_page') }}" class="nav-item {% if request.endpoint == 'folders.folders_page' %}active{% endif %}">
+          <span class="nav-icon">🗂</span>
+          <span>Folders Tree</span>
+        </a>
+
+        <span class="nav-section-title" style="margin-top:0.6rem;">Categories</span>
+        <a href="{{ url_for('files.vault_page', category='AutoCAD Drawings') }}" class="nav-item {% if request.args.get('category') == 'AutoCAD Drawings' %}active{% endif %}">
+          <span class="nav-icon" style="color:#f59e0b;">📐</span>
+          <span>AutoCAD</span>
+        </a>
+        <a href="{{ url_for('files.vault_page', category='SolidWorks Files') }}" class="nav-item {% if request.args.get('category') == 'SolidWorks Files' %}active{% endif %}">
+          <span class="nav-icon" style="color:#ef4444;">🛠</span>
+          <span>SolidWorks</span>
+        </a>
+        <a href="{{ url_for('files.vault_page', category='PDF Documents') }}" class="nav-item {% if request.args.get('category') == 'PDF Documents' %}active{% endif %}">
+          <span class="nav-icon" style="color:#38bdf8;">📄</span>
+          <span>PDF Documents</span>
+        </a>
+        <a href="{{ url_for('files.vault_page', category='Excel / BOQ / BOM') }}" class="nav-item {% if request.args.get('category') == 'Excel / BOQ / BOM' %}active{% endif %}">
+          <span class="nav-icon" style="color:#10b981;">📊</span>
+          <span>Excel / BOQ</span>
+        </a>
+        <a href="{{ url_for('files.vault_page', category='Images') }}" class="nav-item {% if request.args.get('category') == 'Images' %}active{% endif %}">
+          <span class="nav-icon" style="color:#06b6d4;">🖼</span>
+          <span>Images</span>
+        </a>
+        <a href="{{ url_for('files.vault_page', favorite='true') }}" class="nav-item {% if request.args.get('favorite') == 'true' %}active{% endif %}">
+          <span class="nav-icon" style="color:#fbbf24;">⭐</span>
+          <span>Favorites</span>
+        </a>
+
+        <span class="nav-section-title" style="margin-top:0.6rem;">System</span>
+        <a href="{{ url_for('settings.settings_page') }}" class="nav-item {% if request.endpoint == 'settings.settings_page' %}active{% endif %}">
+          <span class="nav-icon">⚙</span>
+          <span>Settings</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="nav-item" style="color:#f43f5e;">
+          <span class="nav-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-widget">
+          <div class="user-avatar">{{ (session.get('username') or 'A')[0]|upper }}</div>
+          <div class="user-meta">
+            <div class="user-name">{{ session.get('username') or 'Abhi' }}</div>
+            <div class="user-role">Vault Master</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" title="Toggle Navigation">
+            ☰
+          </button>
+          <div class="global-search-container">
+            <span class="search-icon-inside">🔍</span>
+            <input type="text" id="globalSearchInput" class="global-search-input" placeholder="Search files, CAD models, tags, folders... (Press / to focus)">
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <!-- Install App Button (Shows when browser detects PWA installability) -->
+          <button id="pwaInstallBtn" class="btn btn-secondary btn-sm" style="display:none;" onclick="triggerPWAInstall()">
+            <span>📲</span>
+            <span>Install App</span>
+          </button>
+          
+          <button class="btn-upload-nav" onclick="openModal('uploadModal')">
+            <span style="font-size:1.1rem;">+</span>
+            <span>Quick Upload</span>
+          </button>
+          <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-icon" title="Vault Settings">
+            ⚙
+          </a>
+        </div>
+      </header>
+
+      <!-- Content Viewport -->
+      <main class="content-viewport">
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+      <a href="{{ url_for('dashboard.dashboard_page') }}" class="mobile-nav-link {% if request.endpoint == 'dashboard.dashboard_page' %}active{% endif %}">
+        <i>🏠</i>
+        <span>Home</span>
+      </a>
+      <a href="{{ url_for('files.vault_page') }}" class="mobile-nav-link {% if request.endpoint == 'files.vault_page' %}active{% endif %}">
+        <i>📁</i>
+        <span>Vault</span>
+      </a>
+      <button type="button" class="btn-upload-nav" onclick="openModal('uploadModal')" style="padding:0.4rem 0.8rem;font-size:0.75rem;">
+        <span>+</span>
+      </button>
+      <a href="{{ url_for('folders.folders_page') }}" class="mobile-nav-link {% if request.endpoint == 'folders.folders_page' %}active{% endif %}">
+        <i>🗂</i>
+        <span>Folders</span>
+      </a>
+      <a href="{{ url_for('settings.settings_page') }}" class="mobile-nav-link {% if request.endpoint == 'settings.settings_page' %}active{% endif %}">
+        <i>⚙</i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Global Modals -->
+
+  <!-- 1. Universal Preview Modal -->
+  <div class="modal-backdrop" id="previewModal">
+    <div class="modal-dialog preview-modal-dialog">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:0.75rem;overflow:hidden;">
+          <span style="font-size:1.3rem;">👁️</span>
+          <span class="modal-title" id="previewModalTitle" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:600px;">Document Preview</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <a href="#" id="previewModalDownloadBtn" class="btn btn-secondary btn-sm" download>⬇️ Download</a>
+          <button class="modal-close-btn" onclick="closeModal('previewModal')">&times;</button>
+        </div>
+      </div>
+      <div class="preview-body-container" id="previewModalBody">
+        <!-- Preview injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Multi-File Upload Modal -->
+  <div class="modal-backdrop" id="uploadModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-size:1.2rem;color:#6366f1;">📤</span>
+          <span class="modal-title">Upload Documents to Vault</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('uploadModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem;">
+        
+        <input type="file" id="modalFileInput" multiple style="display:none;">
+        
+        <div class="dropzone-container" id="modalDropzone">
+          <div class="dropzone-icon">☁️</div>
+          <div class="dropzone-title">Drag & Drop files here</div>
+          <div class="dropzone-subtitle">or click to browse from device (CAD, PDFs, SolidWorks, Images, Code, Docs)</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span id="uploadFileCountBadge" style="font-size:0.8rem;color:#94a3b8;">0 files selected</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('modalFileInput').click()">+ Add More Files</button>
+        </div>
+
+        <div id="uploadQueueList" style="max-height:160px;overflow-y:auto;padding-right:0.3rem;">
+          <!-- Queue items -->
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Target Folder</label>
+            <select id="uploadFolderSelect" class="select-styled" style="width:100%;">
+              <option value="root">📁 Root / No Folder</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Category</label>
+            <select id="uploadCategorySelect" class="select-styled" style="width:100%;">
+              <option value="auto">⚡ Auto-detect by extension</option>
+              <option value="AutoCAD Drawings">📐 AutoCAD Drawings</option>
+              <option value="SolidWorks Files">🛠 SolidWorks Files</option>
+              <option value="PDF Documents">📄 PDF Documents</option>
+              <option value="Excel / BOQ / BOM">📊 Excel / BOQ / BOM</option>
+              <option value="Engineering Documents">📑 Engineering Documents</option>
+              <option value="Images">🖼 Images</option>
+              <option value="Programming">💻 Programming</option>
+              <option value="Personal">🔒 Personal</option>
+              <option value="Other">📦 Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Tags (optional)</label>
+          <input type="text" id="uploadTagsInput" class="select-styled" style="width:100%;" placeholder="e.g. 415v, fabrication, assembly, client-rev1">
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:0.3rem;">Description / Notes (optional)</label>
+          <textarea id="uploadDescriptionInput" class="select-styled" rows="2" style="width:100%;" placeholder="Add engineering specifications or notes..."></textarea>
+        </div>
+
+        <div id="uploadProgressBox" style="display:none;margin-top:0.5rem;">
+          <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
+            <div id="uploadProgressBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#38bdf8);transition:width 0.15s ease;"></div>
+          </div>
+          <div id="uploadProgressText" style="font-size:0.75rem;color:#38bdf8;margin-top:0.35rem;text-align:center;">Uploading...</div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('uploadModal')">Cancel</button>
+        <button class="btn btn-danger" id="btnCancelUpload" style="display:none;" onclick="cancelFileUpload()">Abort Upload</button>
+        <button class="btn btn-primary" id="btnStartUpload" onclick="startFileUpload()">Upload to Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. File Details Modal -->
+  <div class="modal-backdrop" id="fileDetailsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title">File Details & Actions</span>
+        <button class="modal-close-btn" onclick="closeModal('fileDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="fileDetailsModalBody">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Create Folder Modal -->
+  <div class="modal-backdrop" id="createFolderModal">
+    <div class="modal-dialog" style="max-width:450px;">
+      <form onsubmit="handleCreateFolderSubmit(event)">
+        <div class="modal-header">
+          <span class="modal-title">Create New Folder</span>
+          <button type="button" class="modal-close-btn" onclick="closeModal('createFolderModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem;">
+          <input type="hidden" id="createFolderParentId">
+          <div>
+            <label style="font-size:0.8rem;color:#94a3b8;display:block;margin-bottom:0.4rem;">Folder Name</label>
+            <input type="text" id="createFolderNameInput" class="select-styled" style="width:100%;" placeholder="e.g. AutoCAD, Panel, Busbar..." required autofocus>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('createFolderModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Folder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Rename Folder Modal -->
+  <div class="modal-backdrop" id="renameFolderModal">
+    <div class="modal-dialog" style="max-width:450px;">
+      <form onsubmit="handleRenameFolderSubmit(event)">
+        <div class="modal-header">
+          <span class="modal-title">Rename Folder</span>
+          <button type="button" class="modal-close-btn" onclick="closeModal('renameFolderModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem;">
+          <input type="hidden" id="renameFolderId">
+          <div>
+            <label style="font-size:0.8rem;color:#94a3b8;display:block;margin-bottom:0.4rem;">New Folder Name</label>
+            <input type="text" id="renameFolderNameInput" class="select-styled" style="width:100%;" required autofocus>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('renameFolderModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Name</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Bulk Move Modal -->
+  <div class="modal-backdrop" id="bulkMoveModal">
+    <div class="modal-dialog" style="max-width:450px;">
+      <div class="modal-header">
+        <span class="modal-title">Move Files to Folder</span>
+        <button type="button" class="modal-close-btn" onclick="closeModal('bulkMoveModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem;">
+        <label style="font-size:0.8rem;color:#94a3b8;">Select Destination Folder</label>
+        <select id="bulkMoveFolderSelect" class="select-styled" style="width:100%;">
+          <option value="root">📁 Root / No Folder</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('bulkMoveModal')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="handleBulkMoveSubmit()">Move Files</button>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Unauthenticated container (e.g. Login Page) -->
+  {% block auth_content %}{% endblock %}
+  {% endif %}
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Libraries -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vault.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/folders.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+
+  <script>
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {});
+      });
+    }
+
+    // PWA Install Prompt Handler
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('pwaInstallBtn');
+      if (installBtn) installBtn.style.display = 'inline-flex';
+    });
+
+    function triggerPWAInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('AbhiApp installed to your device!', 'success');
+          }
+          deferredPrompt = null;
+          const installBtn = document.getElementById('pwaInstallBtn');
+          if (installBtn) installBtn.style.display = 'none';
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initUploadDropzone('modalDropzone', 'modalFileInput');
+    });
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

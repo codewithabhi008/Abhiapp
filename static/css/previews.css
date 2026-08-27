@@ -1,0 +1,220 @@
+/* Previews Container */
+.preview-modal-dialog {
+  max-width: 1100px;
+  width: 96%;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.preview-body-container {
+  flex: 1;
+  background: #080b11;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* PDF Preview Frame */
+.pdf-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #1e293b;
+}
+
+/* Image Lightbox Preview */
+.image-lightbox-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  overflow: auto;
+}
+
+.image-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  transition: transform 0.2s ease;
+}
+
+/* Code & Text Viewer */
+.code-viewer-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0d111a;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.code-viewer-toolbar {
+  padding: 0.5rem 1rem;
+  background: #141a29;
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.code-language-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.code-pre-block {
+  flex: 1;
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre;
+  tab-size: 4;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* CAD File Specification Inspector Card */
+.cad-inspector-card {
+  width: 100%;
+  max-width: 700px;
+  background: linear-gradient(145deg, rgba(22, 31, 51, 0.95) 0%, rgba(13, 17, 26, 0.95) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cad-inspector-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+}
+
+.cad-header-section {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.cad-big-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f59e0b;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+  flex-shrink: 0;
+}
+
+.cad-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cad-file-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  word-break: break-all;
+}
+
+.cad-tech-type {
+  font-size: 0.78rem;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.cad-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  background: rgba(10, 13, 20, 0.5);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+}
+
+.cad-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cad-spec-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.cad-spec-value {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.cad-notice-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.cad-actions-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .cad-spec-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+  .cad-inspector-card {
+    padding: 1.15rem 0.85rem;
+  }
+}

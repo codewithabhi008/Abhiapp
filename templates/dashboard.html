@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AbhiApp Personal Vault{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:1.15rem;width:100%;box-sizing:border-box;">
+
+  <!-- Hero Welcome Banner -->
+  <div class="glass-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.85rem;background:linear-gradient(135deg,rgba(30,27,75,0.7) 0%,rgba(15,23,42,0.8) 100%);border-color:rgba(99,102,241,0.25);">
+    <div style="min-width:0;flex:1;">
+      <div style="font-size:0.75rem;color:#38bdf8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.2rem;">Secure Digital Vault</div>
+      <h1 style="font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-0.02em;word-break:break-word;">Welcome to AbhiApp</h1>
+      <p style="color:#94a3b8;font-size:0.8rem;margin-top:0.15rem;">Your Personal Digital Vault &bull; Engineering & Document Manager</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <a href="{{ url_for('files.vault_page') }}" class="btn btn-secondary btn-sm">
+        <span>📁</span> Browse
+      </a>
+      <button class="btn btn-primary btn-sm" onclick="openModal('uploadModal')">
+        <span>📤</span> Upload
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards Grid -->
+  <div class="stats-grid">
+    
+    <!-- Total Files -->
+    <div class="glass-card stat-card stat-total">
+      <div class="stat-header">
+        <span class="stat-title">Total Files</span>
+        <div class="stat-icon">📁</div>
+      </div>
+      <div class="stat-value" id="statTotalFiles">-</div>
+      <div class="stat-footer">
+        <span id="statStorageTotal">-</span> used in vault
+      </div>
+    </div>
+
+    <!-- Storage Used -->
+    <div class="glass-card stat-card stat-pdf">
+      <div class="stat-header">
+        <span class="stat-title">PDF Documents</span>
+        <div class="stat-icon">📄</div>
+      </div>
+      <div class="stat-value" id="statPdfCount">-</div>
+      <div class="stat-footer">
+        <span id="statPdfSize">-</span> allocated
+      </div>
+    </div>
+
+    <!-- AutoCAD Files -->
+    <div class="glass-card stat-card stat-autocad">
+      <div class="stat-header">
+        <span class="stat-title">AutoCAD Drawings</span>
+        <div class="stat-icon">📐</div>
+      </div>
+      <div class="stat-value" id="statAutocadCount">-</div>
+      <div class="stat-footer">
+        <span id="statAutocadSize">-</span> (.dwg, .dxf)
+      </div>
+    </div>
+
+    <!-- SolidWorks Files -->
+    <div class="glass-card stat-card stat-solidworks">
+      <div class="stat-header">
+        <span class="stat-title">SolidWorks 3D</span>
+        <div class="stat-icon">🛠</div>
+      </div>
+      <div class="stat-value" id="statSolidworksCount">-</div>
+      <div class="stat-footer">
+        <span id="statSolidworksSize">-</span> (.sldprt, .sldasm)
+      </div>
+    </div>
+
+    <!-- Images -->
+    <div class="glass-card stat-card stat-images">
+      <div class="stat-header">
+        <span class="stat-title">Images & Visuals</span>
+        <div class="stat-icon">🖼</div>
+      </div>
+      <div class="stat-value" id="statImagesCount">-</div>
+      <div class="stat-footer">
+        <span id="statImagesSize">-</span> (.png, .jpg, .svg)
+      </div>
+    </div>
+
+    <!-- Other Documents & BOQ -->
+    <div class="glass-card stat-card stat-other">
+      <div class="stat-header">
+        <span class="stat-title">Other & BOQ / BOM</span>
+        <div class="stat-icon">📊</div>
+      </div>
+      <div class="stat-value" id="statOtherCount">-</div>
+      <div class="stat-footer">
+        <span id="statOtherSize">-</span> Excel, Code, Docs
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Upload Drag & Drop Widget -->
+  <div class="dropzone-container" id="dashboardDropzone">
+    <input type="file" id="dashboardFileInput" multiple style="display:none;">
+    <div class="dropzone-icon">⚡</div>
+    <div class="dropzone-title">Quick Upload to Vault</div>
+    <div class="dropzone-subtitle">Drag and drop AutoCAD (.dwg, .dxf), SolidWorks (.sldprt, .sldasm), PDFs, BOQ, Images or Code files</div>
+  </div>
+
+  <!-- Recent Uploads Table -->
+  <div class="glass-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <div>
+        <h2 style="font-size:1.15rem;font-weight:700;color:#fff;">Recent Files in Vault</h2>
+        <p style="font-size:0.78rem;color:#94a3b8;">Latest documents stored in your private vault</p>
+      </div>
+      <a href="{{ url_for('files.vault_page') }}" class="btn btn-secondary btn-sm">View All Files &rarr;</a>
+    </div>
+
+    <div class="file-table-container">
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Folder</th>
+            <th>Date</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="dashboardRecentFilesBody">
+          <tr>
+            <td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;">Loading recent vault files...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Two Column Layout: Favorites & Recently Opened -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;width:100%;box-sizing:border-box;">
+    
+    <!-- Favorite Files -->
+    <div class="glass-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h3 style="font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:0.4rem;">
+          <span style="color:#fbbf24;">★</span> Starred / Favorites
+        </h3>
+        <a href="{{ url_for('files.vault_page', favorite='true') }}" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">View All</a>
+      </div>
+      <div id="dashboardFavoritesList" style="display:flex;flex-direction:column;gap:0.6rem;">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Recently Opened Files -->
+    <div class="glass-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h3 style="font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:0.4rem;">
+          <span style="color:#38bdf8;">🕒</span> Recently Accessed
+        </h3>
+      </div>
+      <div id="dashboardOpenedList" style="display:flex;flex-direction:column;gap:0.6rem;">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initUploadDropzone('dashboardDropzone', 'dashboardFileInput');
+    loadDashboardStats();
+  });
+
+  async function loadDashboardStats() {
+    try {
+      const res = await fetch('/api/dashboard/stats');
+      const data = await res.json();
+      if (!data.success) return;
+
+      const s = data.stats;
+      document.getElementById('statTotalFiles').textContent = s.total_files;
+      document.getElementById('statStorageTotal').textContent = s.total_storage_formatted;
+
+      document.getElementById('statPdfCount').textContent = s.pdf.count;
+      document.getElementById('statPdfSize').textContent = s.pdf.formatted_size;
+
+      document.getElementById('statAutocadCount').textContent = s.autocad.count;
+      document.getElementById('statAutocadSize').textContent = s.autocad.formatted_size;
+
+      document.getElementById('statSolidworksCount').textContent = s.solidworks.count;
+      document.getElementById('statSolidworksSize').textContent = s.solidworks.formatted_size;
+
+      document.getElementById('statImagesCount').textContent = s.images.count;
+      document.getElementById('statImagesSize').textContent = s.images.formatted_size;
+
+      document.getElementById('statOtherCount').textContent = s.other_docs.count;
+      document.getElementById('statOtherSize').textContent = s.other_docs.formatted_size;
+
+      // Render Recent Table
+      renderRecentTable(data.recent_uploads);
+      renderFavoritesList(data.favorite_files);
+      renderOpenedList(data.recent_opened);
+
+    } catch (e) {
+      console.error('Error fetching dashboard statistics:', e);
+    }
+  }
+
+  function renderRecentTable(files) {
+    const tbody = document.getElementById('dashboardRecentFilesBody');
+    if (!tbody) return;
+
+    if (!files || files.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;">No documents uploaded yet.</td></tr>';
+      return;
+    }
+
+    let html = '';
+    files.forEach(f => {
+      const badgeClass = getBadgeClass(f.file_extension);
+      const extUpper = f.file_extension.replace('.', '').toUpperCase();
+
+      html += `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;" onclick="openFilePreview(${f.id})">
+              <span class="file-ext-badge ${badgeClass}" style="font-size:0.75rem;padding:2px 6px;">${extUpper}</span>
+              <span style="font-weight:600;color:#fff;" title="${escapeHtml(f.original_name)}">${escapeHtml(f.original_name)}</span>
+            </div>
+          </td>
+          <td><span style="font-size:0.78rem;color:#94a3b8;">${f.category}</span></td>
+          <td><span style="font-size:0.8rem;color:#94a3b8;">${f.formatted_size}</span></td>
+          <td><span style="font-size:0.8rem;color:#94a3b8;">${escapeHtml(f.folder_path || '/')}</span></td>
+          <td><span style="font-size:0.8rem;color:#94a3b8;">${f.relative_date}</span></td>
+          <td style="text-align:right;">
+            <div style="display:inline-flex;gap:0.35rem;">
+              <button class="btn btn-secondary btn-sm" onclick="openFilePreview(${f.id})">Preview</button>
+              <a href="/api/files/${f.id}/download" class="btn btn-secondary btn-sm">Download</a>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  function renderFavoritesList(files) {
+    const container = document.getElementById('dashboardFavoritesList');
+    if (!container) return;
+
+    if (!files || files.length === 0) {
+      container.innerHTML = '<div style="color:#64748b;font-size:0.82rem;padding:0.75rem 0;">No favorite files starred yet.</div>';
+      return;
+    }
+
+    let html = '';
+    files.forEach(f => {
+      html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:rgba(10,13,20,0.4);border:1px solid rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;" onclick="openFilePreview(${f.id})">
+          <div style="display:flex;align-items:center;gap:0.6rem;overflow:hidden;">
+            <span style="color:#fbbf24;font-size:1rem;">★</span>
+            <div style="overflow:hidden;">
+              <div style="font-size:0.85rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escapeHtml(f.original_name)}</div>
+              <div style="font-size:0.72rem;color:#94a3b8;">${f.category} &bull; ${f.formatted_size}</div>
+            </div>
+          </div>
+          <a href="/api/files/${f.id}/download" class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">⬇️</a>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderOpenedList(files) {
+    const container = document.getElementById('dashboardOpenedList');
+    if (!container) return;
+
+    if (!files || files.length === 0) {
+      container.innerHTML = '<div style="color:#64748b;font-size:0.82rem;padding:0.75rem 0;">No recently opened documents.</div>';
+      return;
+    }
+
+    let html = '';
+    files.forEach(f => {
+      html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:rgba(10,13,20,0.4);border:1px solid rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;" onclick="openFilePreview(${f.id})">
+          <div style="display:flex;align-items:center;gap:0.6rem;overflow:hidden;">
+            <span style="color:#38bdf8;font-size:0.9rem;">🕒</span>
+            <div style="overflow:hidden;">
+              <div style="font-size:0.85rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escapeHtml(f.original_name)}</div>
+              <div style="font-size:0.72rem;color:#94a3b8;">${f.relative_date} &bull; ${f.formatted_size}</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openFilePreview(${f.id})">Open</button>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Download AbhiApp Mobile Application{% endblock %}
+
+{% block content %}
+<div style="max-width:650px;margin:1.5rem auto;display:flex;flex-direction:column;gap:1.5rem;">
+
+  <!-- Hero Download Card -->
+  <div class="glass-card" style="text-align:center;padding:2.5rem 1.75rem;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6366f1,#38bdf8,#a855f7);"></div>
+    
+    <div class="brand-logo" style="width:72px;height:72px;font-size:2.2rem;margin:0 auto 1.25rem;border-radius:18px;">A</div>
+    <h1 style="font-size:1.85rem;font-weight:800;color:#fff;margin-bottom:0.35rem;">AbhiApp for Android & Mobile</h1>
+    <p style="font-size:0.88rem;color:#38bdf8;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1.5rem;">Your Personal Digital Vault Native Mobile App</p>
+
+    <div style="margin-bottom:1.5rem;">
+      <button type="button" id="btnDirectInstall" class="btn btn-primary" style="padding:0.9rem 2rem;font-size:1.05rem;font-weight:700;border-radius:12px;box-shadow:0 0 25px rgba(99,102,241,0.5);" onclick="executeDirectInstall()">
+        <span style="font-size:1.3rem;">📲</span>
+        <span>Install App on Mobile (Direct 1-Click)</span>
+      </button>
+    </div>
+
+    <div id="installNoticeBox" style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">
+      Works natively on all Android devices, Tablets, and iPhones without Play Store hassle.
+    </div>
+  </div>
+
+  <!-- 3 Steps Visual Guide -->
+  <div class="glass-card">
+    <h2 style="font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+      <span>📖</span> Direct Mobile Installation Guide
+    </h2>
+
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      
+      <div style="display:flex;align-items:flex-start;gap:0.85rem;background:rgba(10,13,20,0.5);padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+        <div style="background:#6366f1;color:#fff;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">1</div>
+        <div>
+          <div style="font-weight:600;color:#fff;font-size:0.92rem;">Click the Install Button Above</div>
+          <div style="color:#94a3b8;font-size:0.82rem;margin-top:0.2rem;">Tap the purple <strong>"Install App on Mobile"</strong> button above, or open the Chrome menu (3 dots ⋮).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:0.85rem;background:rgba(10,13,20,0.5);padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+        <div style="background:#38bdf8;color:#000;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">2</div>
+        <div>
+          <div style="font-weight:600;color:#fff;font-size:0.92rem;">Tap "Install" on the Prompt</div>
+          <div style="color:#94a3b8;font-size:0.82rem;margin-top:0.2rem;">Your phone will show an official Android system confirmation: <em>"Install AbhiApp?"</em>. Tap <strong>Install</strong>.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:0.85rem;background:rgba(10,13,20,0.5);padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+        <div style="background:#10b981;color:#fff;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">3</div>
+        <div>
+          <div style="font-weight:600;color:#fff;font-size:0.92rem;">Ready in Your App List (WhatsApp / Instagram Style)</div>
+          <div style="color:#94a3b8;font-size:0.82rem;margin-top:0.2rem;">The app icon is placed on your home screen. Open it anytime to get a pure native mobile app experience!</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function executeDirectInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          showToast('AbhiApp successfully installed on your device!', 'success');
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      // Guide the user to tap Chrome 3-dots
+      showToast('Tap the 3 dots (⋮) in Chrome top-right -> "Install App"', 'info');
+      alert('To install on Android:\n1. Tap the 3 dots (⋮) at top right of Chrome\n2. Tap "Install App" or "Add to Home screen"');
+    }
+  }
+</script>
+{% endblock %}
