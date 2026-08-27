@@ -25,6 +25,16 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/previews.css') }}">
 
+  <!-- Immediate Theme Initializer to prevent flash -->
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('abhiapp-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -124,6 +134,12 @@
         </div>
 
         <div class="navbar-right">
+          <!-- Theme Toggle Button -->
+          <button type="button" class="btn btn-secondary btn-sm theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
+            <span>☀️</span>
+            <span class="theme-btn-label">Light</span>
+          </button>
+
           <!-- Install App Button (Shows when browser detects PWA installability) -->
           <button id="pwaInstallBtn" class="btn btn-secondary btn-sm" style="display:none;" onclick="triggerPWAInstall()">
             <span>📲</span>
